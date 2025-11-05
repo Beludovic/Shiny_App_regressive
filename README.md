@@ -30,11 +30,11 @@ library(shiny)
 runApp("path/to/shiny-demo-app")
 
 *## 🔹 6. DESCRIPTION*
-Package: shiny-demo-app
-Title: Shiny Demo App for Data Exploration and Modeling
+Package: shiny-app-regressive
+Title: Shiny Regressive App for Data Exploration and Modeling
 Version: 1.0
 Author: Ludovic Bekou
-Maintainer: Ludovic Bekou <your.email@example.com>
+Maintainer: Ludovic Bekou <bekouludovic@gmail.com>
 Description: A simple yet robust R/Shiny application demonstrating reactive visualization and linear modeling.
 License: MIT
 Encoding: UTF-8
