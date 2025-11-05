@@ -1,0 +1,82 @@
+
+---
+
+### 🔹 2. **app.R**
+
+```r
+# app.R
+library(shiny)
+library(ggplot2)
+library(DT)
+library(shinythemes)
+
+source("R/helpers.R")
+source("R/modeling.R")
+
+ui <- fluidPage(
+  theme = shinytheme("flatly"),
+  titlePanel("Shiny Demo App — Data Exploration & Modeling"),
+  
+  sidebarLayout(
+    sidebarPanel(
+      h4("Controls"),
+      selectInput("dataset", "Dataset:", c("mtcars", "iris")),
+      uiOutput("x_var"),
+      uiOutput("y_var"),
+      checkboxInput("smooth", "Add regression line", TRUE),
+      hr(),
+      actionButton("fit", "Fit Linear Model"),
+      verbatimTextOutput("model_summary"),
+      downloadButton("download_code", "Download app.R")
+    ),
+    
+    mainPanel(
+      tabsetPanel(
+        tabPanel("📊 Plot", plotOutput("scatter", height = "500px")),
+        tabPanel("📋 Table", DTOutput("table")),
+        tabPanel("ℹ️ About", includeMarkdown("README.md"))
+      )
+    )
+  )
+)
+
+server <- function(input, output, session) {
+  datasets <- list(mtcars = mtcars, iris = iris)
+  
+  output$x_var <- renderUI({
+    numeric_vars <- get_numeric_vars(datasets[[input$dataset]])
+    selectInput("x", "X variable", numeric_vars, numeric_vars[1])
+  })
+  
+  output$y_var <- renderUI({
+    numeric_vars <- get_numeric_vars(datasets[[input$dataset]])
+    selectInput("y", "Y variable", numeric_vars, numeric_vars[2])
+  })
+  
+  output$scatter <- renderPlot({
+    req(input$x, input$y)
+    df <- datasets[[input$dataset]]
+    plot_scatter(df, input$x, input$y, input$smooth)
+  })
+  
+  output$table <- renderDT({
+    datatable(datasets[[input$dataset]], extensions = "Buttons",
+              options = list(dom = "Bfrtip", buttons = c("copy", "csv", "excel", "pdf")))
+  })
+  
+  model <- eventReactive(input$fit, {
+    req(input$x, input$y)
+    fit_linear_model(datasets[[input$dataset]], input$x, input$y)
+  })
+  
+  output$model_summary <- renderPrint({
+    print(summary(model()))
+  })
+  
+  output$download_code <- downloadHandler(
+    filename = function() "app.R",
+    content = function(file) file.copy("app.R", file)
+  )
+}
+
+shinyApp(ui, server)
